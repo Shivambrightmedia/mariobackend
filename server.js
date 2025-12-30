@@ -12,18 +12,27 @@ const server = http.createServer(app);
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5500';
 const PORT = process.env.PORT || 3000;
 
-// CORS configuration for REST API
+// Parse allowed origins (handle trailing slashes)
+const getAllowedOrigins = () => {
+    const urls = FRONTEND_URL.split(',').map(url => url.trim().replace(/\/$/, ''));
+    // Also add with trailing slash
+    const withTrailing = urls.map(url => url + '/');
+    return [...urls, ...withTrailing, '*'];
+};
+
+// CORS configuration for REST API - allow all for now
 app.use(cors({
-    origin: FRONTEND_URL.split(',').map(url => url.trim()),
-    methods: ['GET', 'POST']
+    origin: true,  // Allow all origins
+    methods: ['GET', 'POST', 'OPTIONS'],
+    credentials: true
 }));
 
 app.use(express.json());
 
-// Socket.io with CORS
+// Socket.io with CORS - allow all origins
 const io = new Server(server, {
     cors: {
-        origin: FRONTEND_URL.split(',').map(url => url.trim()),
+        origin: "*",  // Allow all origins for WebSocket
         methods: ["GET", "POST"]
     }
 });
